@@ -4,6 +4,7 @@ import throttle from 'lodash/throttle'
 import React, {
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useReducer,
   useRef,
@@ -72,9 +73,10 @@ import { useTrackUserInput } from '../hooks/use-track-user-input'
 
 type DeferredOperation = () => void
 
-const Children = (props: Parameters<typeof useChildren>[0]) => (
-  <React.Fragment>{useChildren(props)}</React.Fragment>
-)
+const Children = (props: Parameters<typeof useChildren>[0]) => {
+  console.log('----- CHILDREN ----- DEBUG5')
+  return <React.Fragment>{useChildren(props)}</React.Fragment>
+}
 
 /**
  * `RenderElementProps` are passed to the `renderElement` handler.
@@ -128,6 +130,16 @@ export type EditableProps = {
  */
 
 export const Editable = (props: EditableProps) => {
+  console.log('----- BEFORE RENDER ----- DEBUG5');
+
+  useEffect(() => {
+    console.log('----- AFTER RENDER ----- DEBUG5')
+  })
+
+  useLayoutEffect(() => {
+    console.log('----- LAYOUT EFFECT ----- DEBUG5');
+  })
+
   const {
     autoFocus,
     decorate = defaultDecorate,
@@ -182,6 +194,8 @@ export const Editable = (props: EditableProps) => {
   // while a selection is being dragged.
   const onDOMSelectionChange = useCallback(
     throttle(() => {
+      console.log('DEBUG5 onDOMSelectionChangeAux')
+
       if (
         (IS_ANDROID || !ReactEditor.isComposing(editor)) &&
         (!state.isUpdatingSelection || androidInputManager?.isFlushing()) &&
@@ -191,6 +205,8 @@ export const Editable = (props: EditableProps) => {
         const { activeElement } = root
         const el = ReactEditor.toDOMNode(editor, editor)
         const domSelection = root.getSelection()
+
+        console.log('DEBUG7 selection K2', domSelection?.focusOffset, domSelection?.focusNode?.cloneNode())
 
         if (activeElement === el) {
           state.latestElement = activeElement
@@ -214,6 +230,7 @@ export const Editable = (props: EditableProps) => {
           isTargetInsideNonReadonlyVoid(editor, focusNode)
 
         if (anchorNodeSelectable && focusNodeSelectable) {
+          console.log('DEBUG7 reason selection changed')
           const range = ReactEditor.toSlateRange(editor, domSelection, {
             exactMatch: false,
             suppressThrow: true,
@@ -264,10 +281,14 @@ export const Editable = (props: EditableProps) => {
       NODE_TO_ELEMENT.delete(editor)
     }
 
+    console.log('DEBUG5 updateSelection')
+
     // Make sure the DOM selection state is in sync.
     const { selection } = editor
     const root = ReactEditor.findDocumentOrShadowRoot(editor)
     const domSelection = root.getSelection()
+
+    console.log('DEBUG7 selection K1', domSelection?.anchorOffset)
 
     if (
       !domSelection ||
@@ -302,6 +323,7 @@ export const Editable = (props: EditableProps) => {
         selection &&
         !forceChange
       ) {
+        console.log('DEBUG7 reason updateSelection 1')
         const slateRange = ReactEditor.toSlateRange(editor, domSelection, {
           exactMatch: true,
 
@@ -310,8 +332,22 @@ export const Editable = (props: EditableProps) => {
           suppressThrow: true,
         })
 
+        console.log('DEBUG7 SELECTION A1', {
+          anchor: {
+            offset: slateRange?.anchor.offset,
+            path: [...(slateRange?.anchor.path || [])],
+          },
+          focus: {
+            offset: slateRange?.focus.offset,
+            path: [...(slateRange?.focus.path || [])],
+          },
+        })
+
         if (slateRange && Range.equals(slateRange, selection)) {
+          console.log('DEBUG7 SELECTION A2', state.hasMarkPlaceholder)
+
           if (!state.hasMarkPlaceholder) {
+            console.log('DEBUG7 SELECTION A3')
             return
           }
 
@@ -322,6 +358,7 @@ export const Editable = (props: EditableProps) => {
               'data-slate-mark-placeholder'
             )
           ) {
+            console.log('DEBUG7 SELECTION A4')
             return
           }
         }
@@ -332,10 +369,12 @@ export const Editable = (props: EditableProps) => {
       // but Slate's value is not being updated through any operation
       // and thus it doesn't transform selection on its own
       if (selection && !ReactEditor.hasRange(editor, selection)) {
+        console.log('DEBUG7 reason updateSelection 2')
         editor.selection = ReactEditor.toSlateRange(editor, domSelection, {
           exactMatch: false,
           suppressThrow: true,
         })
+
         return
       }
 
@@ -344,6 +383,13 @@ export const Editable = (props: EditableProps) => {
 
       const newDomRange: DOMRange | null =
         selection && ReactEditor.toDOMRange(editor, selection)
+
+      console.log('DEBUG7 SELECTION C1', {
+        startContainer: newDomRange?.startContainer?.cloneNode(),
+        endContainer: newDomRange?.endContainer?.cloneNode(),
+        startOffset: newDomRange?.startOffset,
+        endOffset: newDomRange?.endOffset,
+      })
 
       if (newDomRange) {
         if (Range.isBackward(selection!)) {
@@ -373,11 +419,14 @@ export const Editable = (props: EditableProps) => {
     const ensureSelection = androidInputManager?.isFlushing() === 'action'
 
     if (!IS_ANDROID || !ensureSelection) {
+      console.log('DEBUG7 D1', !IS_ANDROID, !ensureSelection)
       setTimeout(() => {
         // COMPAT: In Firefox, it's not enough to create a range, you also need
         // to focus the contenteditable element too. (2016/11/16)
+        console.log('DEBUG7 D2', newDomRange, IS_FIREFOX)
         if (newDomRange && IS_FIREFOX) {
           const el = ReactEditor.toDOMNode(editor, editor)
+          console.log('DEBUG7 D3', el)
           el.focus()
         }
 
@@ -392,6 +441,7 @@ export const Editable = (props: EditableProps) => {
         const ensureDomSelection = (forceChange?: boolean) => {
           try {
             const el = ReactEditor.toDOMNode(editor, editor)
+            console.log('DEBUG7 E1')
             el.focus()
 
             setDomSelection(forceChange)
@@ -534,6 +584,7 @@ export const Editable = (props: EditableProps) => {
           const [targetRange] = (event as any).getTargetRanges()
 
           if (targetRange) {
+            console.log('DEBUG7 reason beforeinput')
             const range = ReactEditor.toSlateRange(editor, targetRange, {
               exactMatch: false,
               suppressThrow: false,
@@ -735,6 +786,8 @@ export const Editable = (props: EditableProps) => {
     }
   }, [scheduleOnDOMSelectionChange])
 
+  console.log('DEBUG5 updateDecorations')
+
   const decorations = decorate([editor, []])
 
   if (
@@ -754,6 +807,8 @@ export const Editable = (props: EditableProps) => {
   }
 
   const { marks } = editor
+
+  console.log('DEBUG7 wat 0', 'state FALSE');
   state.hasMarkPlaceholder = false
 
   if (editor.selection && Range.isCollapsed(editor.selection) && marks) {
@@ -763,7 +818,11 @@ export const Editable = (props: EditableProps) => {
 
     // While marks isn't a 'complete' text, we can still use loose Text.equals
     // here which only compares marks anyway.
+
+    console.log('DEBUG7 wat 1', leaf, marks)
+
     if (!Text.equals(leaf, marks as Text, { loose: true })) {
+      console.log('DEBUG7 wat 2', 'state TRUE')
       state.hasMarkPlaceholder = true
 
       const unset = Object.fromEntries(
@@ -784,6 +843,8 @@ export const Editable = (props: EditableProps) => {
   // Update EDITOR_TO_MARK_PLACEHOLDER_MARKS in setTimeout useEffect to ensure we don't set it
   // before we receive the composition end event.
   useEffect(() => {
+    console.log('DEBUG5 updateMarkPlaceholderMarks')
+
     setTimeout(() => {
       const { selection } = editor
       if (selection) {

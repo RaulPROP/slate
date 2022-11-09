@@ -13,13 +13,16 @@ export function useMutationObserver(
   useIsomorphicLayoutEffect(() => {
     // Discard mutations caused during render phase. This works due to react calling
     // useLayoutEffect synchronously after the render phase before the next tick.
-    mutationObserver.takeRecords()
+    const record = mutationObserver.takeRecords()
+    console.log("DEBUG5 afterRenderPhase", record);
   })
 
   useEffect(() => {
     if (!node.current) {
       throw new Error('Failed to attach MutationObserver, `node` is undefined')
     }
+
+    console.log('DEBUG5 mutationObserver ()');
 
     mutationObserver.observe(node.current, options)
     return () => mutationObserver.disconnect()

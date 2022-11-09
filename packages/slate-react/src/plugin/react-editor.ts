@@ -414,6 +414,36 @@ export const ReactEditor = {
       : endNode.parentElement) as HTMLElement
     const isEndAtZeroWidth = !!endEl.getAttribute('data-slate-zero-width')
 
+    console.log("DEBUG7 selection X1", {
+      range: {
+        focus: {
+          offset: range.focus.offset,
+          path: [...range.focus.path],
+        },
+        anchor: {
+          offset: range.anchor.offset,
+          path: [...range.anchor.path],
+        },
+      },
+
+      isBackward,
+
+      domAnchor,
+
+      domFocus,
+
+      startNode: startNode.cloneNode(),
+      startOffset,
+
+      endNode: endNode.cloneNode(),
+      endOffset,
+
+      startEl: startEl.cloneNode(),
+      isStartAtZeroWidth,
+      endEl: endEl.cloneNode(),
+      isEndAtZeroWidth,
+    });
+
     domRange.setStart(startNode, isStartAtZeroWidth ? 1 : startOffset)
     domRange.setEnd(endNode, isEndAtZeroWidth ? 1 : endOffset)
     return domRange
@@ -699,6 +729,21 @@ export const ReactEditor = {
     let focusOffset
     let isCollapsed
 
+    const anyDomRange = domRange as any;
+
+    const isSelected = isDOMSelection(domRange);
+
+    console.log("DEBUG7 selection Z1", {
+      isDOMSelection: isSelected,
+      el: el?.cloneNode(),
+      domRange: {
+        anchorNode: isSelected ? anyDomRange.anchorNode.cloneNode() : anyDomRange.startContainer.cloneNode(),
+        anchorOffset: isSelected ? anyDomRange.anchorOffset : anyDomRange.startOffset,
+        focusNode: isSelected ? anyDomRange.focusNode.cloneNode() : anyDomRange.endContainer.cloneNode(),
+        focusOffset: isSelected ? anyDomRange.focusOffset : anyDomRange.endOffset,
+      }
+    });
+
     if (el) {
       if (isDOMSelection(domRange)) {
         anchorNode = domRange.anchorNode
@@ -760,6 +805,18 @@ export const ReactEditor = {
     // and the DOM focus is an Element
     // (meaning that the selection ends before the element)
     // unhang the range to avoid mistakenly including the void
+
+    console.log("DEBUG7 selection Z2", {
+      anchor: {
+        offset: range.anchor.offset,
+        path: [...range.anchor.path],
+      },
+      focus: {
+        offset: range.focus.offset,
+        path: [...range.focus.path],
+      },
+    });
+
     if (
       Range.isExpanded(range) &&
       Range.isForward(range) &&

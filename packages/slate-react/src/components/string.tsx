@@ -65,6 +65,7 @@ const TextString = (props: { text: string; isTrailing?: boolean }) => {
   const ref = useRef<HTMLSpanElement>(null)
 
   const getTextContent = () => {
+    console.log("DEBUG4 STRING");
     return `${text ?? ''}${isTrailing ? '\n' : ''}`
   }
 

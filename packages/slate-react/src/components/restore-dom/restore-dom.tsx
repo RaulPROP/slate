@@ -33,6 +33,8 @@ class RestoreDOMComponent extends Component<RestoreDOMProps> {
       throw new Error('Failed to attach MutationObserver, `node` is undefined')
     }
 
+    console.log('DEBUG5 OBSERVE_DOM');
+
     this.mutationObserver?.observe(node.current, MUTATION_OBSERVER_CONFIG)
   }
 
@@ -47,6 +49,7 @@ class RestoreDOMComponent extends Component<RestoreDOMProps> {
   }
 
   getSnapshotBeforeUpdate() {
+    console.log("DEBUG5 !!!! getSnapshotBeforeUpdate");
     const pendingMutations = this.mutationObserver?.takeRecords()
     if (pendingMutations?.length) {
       this.manager?.registerMutations(pendingMutations)

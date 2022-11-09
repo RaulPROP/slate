@@ -70,6 +70,7 @@ const Element = (props: {
   // Attributes that the developer must mix into the element in their
   // custom node renderer component.
   const attributes: {
+    'data-key': string,
     'data-slate-node': 'element'
     'data-slate-void'?: true
     'data-slate-inline'?: true
@@ -77,6 +78,7 @@ const Element = (props: {
     dir?: 'rtl'
     ref: any
   } = {
+    'data-key': key.id,
     'data-slate-node': 'element',
     ref,
   }

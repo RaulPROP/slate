@@ -50,6 +50,8 @@ export const Slate = (props: {
   } = getSelectorContext(editor)
 
   const onContextChange = useCallback(() => {
+    console.log("DEBUG5 onContextChange");
+
     if (onChange) {
       onChange(editor.children)
     }

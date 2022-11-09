@@ -689,6 +689,8 @@ export function createAndroidInputManager({
   }
 
   const handleDomMutations = (mutations: MutationRecord[]) => {
+    console.log('DEBUG5 handleDomMutations', mutations, hasPendingDiffs() || hasPendingAction());
+    
     if (hasPendingDiffs() || hasPendingAction()) {
       return
     }
@@ -698,6 +700,7 @@ export function createAndroidInputManager({
     ) {
       // Cause a re-render to restore the dom state if we encounter tracked mutations without
       // a corresponding pending action.
+      console.log("----- FORCE_RENDER ----- DEBUG5");
       EDITOR_TO_FORCE_RENDER.get(editor)?.()
     }
   }
